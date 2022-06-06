@@ -53,6 +53,11 @@ namespace RelativeTopSpeedGV
 			LargeGrid_Boost_b = 17f,
 			LargeGrid_Boost_c = 65000,
 			LargeGrid_Boost_d = 263,
+            EnableAngularLimits = true,
+			SmallGrid_AngularMassMult = 0.01f,
+			SmallGrid_AngularCruiseMult = 0.01f,
+			LargeGrid_AngularMassMult = 0.001f,
+			LargeGrid_AngularCruiseMult = 0.01f,
 
 		};
 
@@ -154,6 +159,21 @@ namespace RelativeTopSpeedGV
 		
         [ProtoMember(33)]
         public float LargeGrid_Boost_d { get; set; }
+
+        [ProtoMember(34)]
+        public bool EnableAngularLimits { get; set; }
+
+        [ProtoMember(35)]
+        public float SmallGrid_AngularMassMult { get; set; }
+
+        [ProtoMember(36)]
+        public float SmallGrid_AngularCruiseMult { get; set; }
+
+        [ProtoMember(37)]
+        public float LargeGrid_AngularMassMult { get; set; }
+
+        [ProtoMember(38)]
+        public float LargeGrid_AngularCruiseMult { get; set; }
 
         public void CalculateCurve()
         {
