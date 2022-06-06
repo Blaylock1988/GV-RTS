@@ -134,12 +134,12 @@ namespace RelativeTopSpeedGV
 			DisabledGrids.Remove(grid);
 		}
 
-		//No longer using this since SE has a Physics.IsMoving getter that includes angular that is now needed
-		private bool IsMoving(IMyEntity ent)
-		{
-			return ent.Physics.LinearVelocity.LengthSquared() > 1 || ent.Physics.LinearAcceleration.LengthSquared() > 1;
-		}
+        private bool IsMoving(IMyEntity ent)
+        {
 
+            return Vector3.IsZero(ent.Physics.LinearVelocity, 1.0f) || Vector3.IsZero(ent.Physics.AngularVelocity, 1.0f);
+        }
+		
 		private bool HasActivationBlock(MyCubeGrid grid)
 		{
 			bool subHasThrust = false;
@@ -183,7 +183,7 @@ namespace RelativeTopSpeedGV
 				PassiveGrids.Remove(grid);
 				ActiveGrids.Remove(grid);
 			}
-			else if (grid.Physics.IsMoving &&
+			else if (IsMoving(grid) &&
 				!(cfg.Value.IgnoreGridsWithoutThrust && grid.BlocksCounters.ContainsKey(thrustTypeId) && grid.BlocksCounters[thrustTypeId] == 0) &&
 				!(cfg.Value.IgnoreGridsWithoutCockpit && grid.BlocksCounters.ContainsKey(cockpitTypeId) && grid.BlocksCounters[cockpitTypeId] == 0))
 			{
@@ -221,7 +221,7 @@ namespace RelativeTopSpeedGV
 						continue;
 					}
 
-					if (grid.Physics.IsMoving)
+					if (IsMoving(grid))
 					{
 						if (!ActiveGrids.Contains(grid))
 						{
@@ -236,7 +236,7 @@ namespace RelativeTopSpeedGV
 				for (int i = 0; i < ActiveGrids.Count; i++)
 				{
 					MyCubeGrid grid = ActiveGrids[i];
-					if (!grid.Physics.IsMoving || !HasActivationBlock(grid))
+					if (!IsMoving(grid) || !HasActivationBlock(grid))
 					{
 						if (!PassiveGrids.Contains(grid))
 						{
@@ -263,7 +263,7 @@ namespace RelativeTopSpeedGV
 					catch { }
 				}
 
-				waitInterval = 180; // reset
+				waitInterval = 60; // reset, was 180
 			}
 
 			for (int i = 0; i < ActiveGrids.Count; i++)
@@ -312,26 +312,6 @@ namespace RelativeTopSpeedGV
 			float mass = grid.Physics.Mass;
 			float cruiseSpeed = GetCruiseSpeed(mass, isLargeGrid);
 			float maxBoost = GetBoostSpeed(mass, isLargeGrid);
-			
-			if (cfg.Value.EnableAngularLimits)
-			{
-				Vector3 ang = grid.Physics.AngularVelocity;
-				
-				if (ang.Length() > cfg.Value.GlobalMinAngularSpeed)
-				{
-					float maxAngular = cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
-					var angSpeedReduction = MathHelper.Lerp(1, isLargeGrid ? cfg.Value.LargeGrid_AngularCruiseMult : cfg.Value.SmallGrid_AngularCruiseMult, MathHelper.Clamp(speed / cruiseSpeed, 0, 1)); 
-					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.5x
-					Vector3 inverseAng = Vector3.Zero;
-					if (ang.Length() > reducedAng)
-					{
-						ang = Vector3.Normalize(ang) * reducedAng;
-						grid.Physics.SetSpeeds(grid.Physics.LinearVelocity, ang);
-						//inverseAng = 0.5f * grid.Physics.Mass * grid.Physics.AngularAcceleration * (float)(grid.GetPhysicalGroupAABB().Extents.Length() / 2 * grid.GridSize);
-						//grid.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, null, null, inverseAng, null, true, false);
-					}
-				}
-			}
 
 			if (speed > minSpeed)
 			{
@@ -380,6 +360,26 @@ namespace RelativeTopSpeedGV
 					if (!MyUtils.IsZero(inverseAccelerationForce))
 					{
 						grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, inverseAccelerationForce, grid.Physics.CenterOfMassWorld, null);
+					}
+				}
+			}
+			
+			if (cfg.Value.EnableAngularLimits)
+			{
+				Vector3 ang = grid.Physics.AngularVelocity;
+				
+				if (ang.Length() > cfg.Value.GlobalMinAngularSpeed)
+				{
+					float maxAngular = cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
+					var angSpeedReduction = MathHelper.Lerp(1, isLargeGrid ? cfg.Value.LargeGrid_AngularCruiseMult : cfg.Value.SmallGrid_AngularCruiseMult, MathHelper.Clamp(speed / cruiseSpeed, 0, 1)); 
+					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.5x
+					Vector3 inverseAng = Vector3.Zero;
+					if (ang.Length() > reducedAng)
+					{
+						ang = Vector3.Normalize(ang) * reducedAng;
+						grid.Physics.SetSpeeds(grid.Physics.LinearVelocity, ang);
+						//inverseAng = 0.5f * grid.Physics.Mass * grid.Physics.AngularAcceleration * (float)(grid.GetPhysicalGroupAABB().Extents.Length() / 2 * grid.GridSize);
+						//grid.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, null, null, inverseAng, null, true, false);
 					}
 				}
 			}
