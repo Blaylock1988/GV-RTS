@@ -20,13 +20,13 @@ namespace RelativeTopSpeedGV
         public const string Filename = "RelativeTopSpeed.cfg";
 
         public static readonly Settings Default = new Settings() {
-            EnableBoosting = true,
-            IgnoreGridsWithoutThrust = true,
+            EnableBoosting = false,
+            IgnoreGridsWithoutThrust = false,
             IgnoreGridsWithoutCockpit = false,
             ParachuteDeployHeight = 400,
             SpeedLimit = 160,
             RemoteControlSpeedLimit = 150,
-			LargeGrid_MinCruise = 60,
+			LargeGrid_MinCruise = 50,
             LargeGrid_MidCruise = 80,
 			LargeGrid_MaxCruise = 100,
 			LargeGrid_MaxBoostSpeed = 140,
@@ -34,7 +34,7 @@ namespace RelativeTopSpeedGV
 			LargeGrid_MinMass = 200000,
             LargeGrid_MidMass = 5000000,
 			LargeGrid_MaxMass = 8000000,
-			SmallGrid_MinCruise = 1,
+			SmallGrid_MinCruise = 60,
             SmallGrid_MidCruise = 95,
 			SmallGrid_MaxCruise = 150,
 			SmallGrid_MaxBoostSpeed = 160,
@@ -60,9 +60,9 @@ namespace RelativeTopSpeedGV
 			LargeGrid_Boost_d = 263,
             EnableAngularLimits = true,
 			SmallGrid_AngularMassMult = 0.01f,
-			SmallGrid_AngularCruiseMult = 0.1f,
+			SmallGrid_AngularCruiseMult = 0.25f,
 			LargeGrid_AngularMassMult = 0.01f,
-			LargeGrid_AngularCruiseMult = 0.1f,
+			LargeGrid_AngularCruiseMult = 0.25f,
 			GlobalMinAngularSpeed = 0.001f,
 		};
 
