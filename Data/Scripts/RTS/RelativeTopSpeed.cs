@@ -136,8 +136,12 @@ namespace RelativeTopSpeedGV
 
         private bool IsMoving(IMyEntity ent)
         {
-
-            return Vector3.IsZero(ent.Physics.LinearVelocity, 1.0f) || Vector3.IsZero(ent.Physics.AngularVelocity, 1.0f);
+			var gridIsMoving = false;
+			if (ent.Physics.LinearVelocity.LengthSquared() > 1.0f || ent.Physics.AngularVelocity.LengthSquared() > 0.01f)
+			{
+				gridIsMoving = true;
+			}
+            return gridIsMoving;
         }
 		
 		private bool HasActivationBlock(MyCubeGrid grid)
@@ -306,7 +310,7 @@ namespace RelativeTopSpeedGV
 
 			MyCubeGrid grid = ActiveGrids[index];
 
-			float speed = grid.Physics.Speed;
+			float speed = Math.Abs(grid.Physics.Speed);
 			bool isLargeGrid = grid.GridSizeEnum == MyCubeSize.Large;
 			float minSpeed = (isLargeGrid) ? cfg.Value.LargeGrid_MinCruise : cfg.Value.SmallGrid_MinCruise;
 			float mass = grid.Physics.Mass;
@@ -368,11 +372,11 @@ namespace RelativeTopSpeedGV
 			{
 				Vector3 ang = grid.Physics.AngularVelocity;
 				
-				if (ang.Length() > cfg.Value.GlobalMinAngularSpeed)
+				if (ang.LengthSquared() > (cfg.Value.GlobalMinAngularSpeed * cfg.Value.GlobalMinAngularSpeed))
 				{
 					float maxAngular = cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
 					var angSpeedReduction = MathHelper.Lerp(1, isLargeGrid ? cfg.Value.LargeGrid_AngularCruiseMult : cfg.Value.SmallGrid_AngularCruiseMult, MathHelper.Clamp(speed / cruiseSpeed, 0, 1)); 
-					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.5x
+					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.25x (AngularCruseMult)
 					Vector3 inverseAng = Vector3.Zero;
 					if (ang.Length() > reducedAng)
 					{
