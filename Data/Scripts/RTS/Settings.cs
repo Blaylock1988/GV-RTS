@@ -17,11 +17,11 @@ namespace RelativeTopSpeedGV
         public static Settings Instance;
         public static bool Debug = false;
 
-        public const string Filename = "RelativeTopSpeed.cfg";
+        public const string Filename = "GVRelativeTopSpeed.cfg";
 
         public static readonly Settings Default = new Settings() {
-            EnableBoosting = false,
-            IgnoreGridsWithoutThrust = false,
+            EnableBoosting = true,
+            IgnoreGridsWithoutThrust = true,
             IgnoreGridsWithoutCockpit = false,
             ParachuteDeployHeight = 400,
             SpeedLimit = 160,

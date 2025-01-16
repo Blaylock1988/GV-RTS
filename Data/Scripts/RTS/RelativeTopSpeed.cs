@@ -21,7 +21,7 @@ namespace RelativeTopSpeedGV
 	public class RelativeTopSpeed : MySessionComponentBase
 	{
 		private const ushort ComId = 16341;
-		private const string ModName = "Relative Top Speed";
+		private const string ModName = GV Relative Top Speed";
 		private const string CommandKeyword = "/rts";
 
 		public NetSync<Settings> cfg;
@@ -134,16 +134,13 @@ namespace RelativeTopSpeedGV
 			DisabledGrids.Remove(grid);
 		}
 
-        private bool IsMoving(IMyEntity ent)
-        {
-			var gridIsMoving = false;
-			if (ent.Physics.LinearVelocity.LengthSquared() > 1.0f || ent.Physics.AngularVelocity.LengthSquared() > 0.01f)
-			{
-				gridIsMoving = true;
-			}
-            return gridIsMoving;
-        }
-		
+		private bool IsMoving(IMyEntity ent)
+		{
+							
+			return ent.Physics.LinearVelocity.LengthSquared() > 1 || ent.Physics.LinearAcceleration.LengthSquared() > 1|| ent.Physics.AngularVelocity.LengthSquared() > 0.01f;
+									
+		}
+
 		private bool HasActivationBlock(MyCubeGrid grid)
 		{
 			bool subHasThrust = false;
@@ -308,14 +305,14 @@ namespace RelativeTopSpeedGV
 		private void UpdateGrid(int index)
 		{
 
-			MyCubeGrid grid = ActiveGrids[index];
+			IMyCubeGrid grid = ActiveGrids[index];
 
-			float speed = Math.Abs(grid.Physics.Speed);
+			float speed = grid.Physics.Speed;
 			bool isLargeGrid = grid.GridSizeEnum == MyCubeSize.Large;
 			float minSpeed = (isLargeGrid) ? cfg.Value.LargeGrid_MinCruise : cfg.Value.SmallGrid_MinCruise;
 			float mass = grid.Physics.Mass;
 			float cruiseSpeed = GetCruiseSpeed(mass, isLargeGrid);
-			float maxBoost = GetBoostSpeed(mass, isLargeGrid);
+
 
 			if (speed > minSpeed)
 			{
@@ -323,6 +320,7 @@ namespace RelativeTopSpeedGV
 				{
 					if (speed >= cruiseSpeed)
 					{
+						float maxBoost = GetBoostSpeed(mass, isLargeGrid);
 						float resistance = (isLargeGrid) ? cfg.Value.LargeGrid_ResistanceMultiplier : cfg.Value.SmallGrid_ResistanceMultiplyer;
 
 						float resistantForce = resistance * mass * (1 - (cruiseSpeed / speed));
@@ -374,16 +372,14 @@ namespace RelativeTopSpeedGV
 				
 				if (ang.LengthSquared() > (cfg.Value.GlobalMinAngularSpeed * cfg.Value.GlobalMinAngularSpeed))
 				{
-					float maxAngular = cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
+					float maxAngular = 2 * cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
 					var angSpeedReduction = MathHelper.Lerp(1, isLargeGrid ? cfg.Value.LargeGrid_AngularCruiseMult : cfg.Value.SmallGrid_AngularCruiseMult, MathHelper.Clamp(speed / cruiseSpeed, 0, 1)); 
 					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.25x (AngularCruseMult)
 					Vector3 inverseAng = Vector3.Zero;
 					if (ang.Length() > reducedAng)
 					{
 						ang = Vector3.Normalize(ang) * reducedAng;
-						grid.Physics.SetSpeeds(grid.Physics.LinearVelocity, ang);
-						//inverseAng = 0.5f * grid.Physics.Mass * grid.Physics.AngularAcceleration * (float)(grid.GetPhysicalGroupAABB().Extents.Length() / 2 * grid.GridSize);
-						//grid.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, null, null, inverseAng, null, true, false);
+						grid.Physics.AngularVelocity = ang;
 					}
 				}
 			}
