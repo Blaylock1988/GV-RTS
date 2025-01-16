@@ -21,7 +21,7 @@ namespace RelativeTopSpeedGV
 	public class RelativeTopSpeed : MySessionComponentBase
 	{
 		private const ushort ComId = 16341;
-		private const string ModName = GV Relative Top Speed";
+		private const string ModName = "GV Relative Top Speed";
 		private const string CommandKeyword = "/rts";
 
 		public NetSync<Settings> cfg;
