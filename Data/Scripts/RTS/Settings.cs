@@ -21,7 +21,7 @@ namespace RelativeTopSpeedGV
 
         public static readonly Settings Default = new Settings() {
             EnableBoosting = true,
-            IgnoreGridsWithoutThrust = true,
+            IgnoreGridsWithoutThrust = false,
             IgnoreGridsWithoutCockpit = false,
             ParachuteDeployHeight = 400,
             SpeedLimit = 160,
