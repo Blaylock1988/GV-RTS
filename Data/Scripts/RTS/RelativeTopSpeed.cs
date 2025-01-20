@@ -375,7 +375,6 @@ namespace RelativeTopSpeedGV
 					float maxAngular = 2 * cruiseSpeed * ((isLargeGrid) ? cfg.Value.LargeGrid_AngularMassMult : cfg.Value.SmallGrid_AngularMassMult);
 					var angSpeedReduction = MathHelper.Lerp(1, isLargeGrid ? cfg.Value.LargeGrid_AngularCruiseMult : cfg.Value.SmallGrid_AngularCruiseMult, MathHelper.Clamp(speed / cruiseSpeed, 0, 1)); 
 					float reducedAng = maxAngular * angSpeedReduction; // at 0 m/s, reduction is 1x, as speed increases, it approaches 0.25x (AngularCruseMult)
-					Vector3 inverseAng = Vector3.Zero;
 					if (ang.Length() > reducedAng)
 					{
 						ang = Vector3.Normalize(ang) * reducedAng;
