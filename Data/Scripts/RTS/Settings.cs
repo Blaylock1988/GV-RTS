@@ -64,6 +64,9 @@ namespace RelativeTopSpeedGV
 			LargeGrid_AngularMassMult = 0.01f,
 			LargeGrid_AngularCruiseMult = 0.25f,
 			GlobalMinAngularSpeed = 0.001f,
+            EnableFlatBoost = false,
+			SmallGrid_FlatBoost = 10f,
+			LargeGrid_FlatBoost = 5f,
 		};
 
         [ProtoMember(1)]
@@ -198,6 +201,15 @@ namespace RelativeTopSpeedGV
         [ProtoMember(44)]
         public float GlobalMinAngularSpeed { get; set; }
 
+        [ProtoMember(45)]
+        public bool EnableFlatBoost { get; set; }
+
+        [ProtoMember(46)]
+        public float SmallGrid_FlatBoost { get; set; }
+
+        [ProtoMember(47)]
+        public float LargeGrid_FlatBoost { get; set; }
+
         // flipped the min and max cruise
         public float GetCruiseSpeed(float mass, float minMass, float midMass, float maxMass, float maxCruise, float midCruise, float minCruise) 
         {
@@ -267,7 +279,8 @@ namespace RelativeTopSpeedGV
 			return interp; //minCruise + (maxCruise - interp);
         }
 
-        public float GetCruiseSpeed(float mass, bool isLargeGrid)
+        //this is the cruise speed curve
+		public float GetCruiseSpeed(float mass, bool isLargeGrid)
         {
             if (isLargeGrid)
             {
@@ -277,14 +290,25 @@ namespace RelativeTopSpeedGV
             return (float)LogDecay(mass, SmallGrid_Cruise_a, SmallGrid_Cruise_b, SmallGrid_Cruise_c, SmallGrid_Cruise_d);
         }
 
+		//this is the boost speed curve, independant from the cruise speed
         public float GetBoostSpeed(float mass, bool isLargeGrid)
         {
-            if (isLargeGrid)
-            {
-                return (float)LogDecay(mass, LargeGrid_Boost_a, LargeGrid_Boost_b, LargeGrid_Boost_c, LargeGrid_Boost_d);
-            }
-
-            return (float)LogDecay(mass, SmallGrid_Boost_a, SmallGrid_Boost_b, SmallGrid_Boost_c, SmallGrid_Boost_d);
+			if (EnableFlatBoost)
+			{
+				if (isLargeGrid)
+				{
+					return (float)LogDecay(mass, LargeGrid_Cruise_a, LargeGrid_Cruise_b, LargeGrid_Cruise_c, LargeGrid_Cruise_d) + LargeGrid_FlatBoost;
+				}
+				return (float)LogDecay(mass, SmallGrid_Cruise_a, SmallGrid_Cruise_b, SmallGrid_Cruise_c, SmallGrid_Cruise_d) + SmallGrid_FlatBoost;
+			}
+			else
+			{
+				if (isLargeGrid)
+				{
+					return (float)LogDecay(mass, LargeGrid_Boost_a, LargeGrid_Boost_b, LargeGrid_Boost_c, LargeGrid_Boost_d);
+				}
+				return (float)LogDecay(mass, SmallGrid_Boost_a, SmallGrid_Boost_b, SmallGrid_Boost_c, SmallGrid_Boost_d);
+			}
         }
 
         public static double CubicInterpolation(double x, double y0, double m0, double y1, double m1)
